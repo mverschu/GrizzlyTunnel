@@ -11,7 +11,6 @@ This script is designed to set up TUN/TAP adapters and routes for creating a VPN
 - [Cleaning Up](#cleaning-up)
 - [Requirements](#requirements)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Introduction
 
@@ -73,8 +72,4 @@ You can use the `--cleanup` option to remove the setup on either the controlled 
 
 ## Contributing
 
-Contributions are welcome! If you have suggestions, improvements, or feature requests, feel free to submit a pull request.
-
-## License
-
-This script is provided under the [MIT License](LICENSE).
+Contributions are welcome! If you have suggestions, improvements, or feature requests, feel free to submit a pull 
