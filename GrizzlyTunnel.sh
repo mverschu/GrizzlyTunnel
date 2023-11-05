@@ -17,9 +17,6 @@ show_help() {
   echo ""
 }
 
-routes=""
-interface="eth0"    # Default outgoing interface
-
 # Function to add routes
 add_routes() {
   local routes=$1
