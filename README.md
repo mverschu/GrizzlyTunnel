@@ -25,18 +25,6 @@ To use this script, you must run it with superuser privileges. It provides sever
 2. Setup target system defining the same routes, this will create IP table rules that tells the traffic to move from the tunnel to the nic that is connected to the target network.
 3. Setup the connection using the command listed when setting up the source system.
 
-### Source
-
-![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/aec4e7e4-3d8a-4510-aaf2-35c9eac0b5b2)
-
-### Target
-
-![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/73476f8a-2c65-477d-ba7f-275fedea60f5)
-
-### VPN active proof
-
-![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/3e6ff5e3-c3ce-403f-8ac6-4bb9d1490180)
-
 ## Options
 
 - `-h, --help`: Display the help menu, which provides an overview of available options and examples.
