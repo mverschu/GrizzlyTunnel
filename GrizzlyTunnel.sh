@@ -68,8 +68,6 @@ setup_controlled_system() {
 
 # Function to set up the compromised system
 setup_compromised_system() {
-  echo "[Debug] adapter_type is set to: $adapter_type"
-
   # Implement compromised system setup steps
   ip tuntap add dev tun0 mode tun user root
 
