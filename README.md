@@ -20,6 +20,10 @@ This script facilitates the setup of a controlled system and a compromised syste
 
 To use this script, you must run it with superuser privileges. It provides several options for setting up and configuring the systems. You can also use it to clean up the configurations on both systems.
 
+1. Setup source system with routes that should be accessible trough the tunnel.
+2. Setup target system defining the same routes, this will create IP table rules that tells the traffic to move from the tunnel to the nic that is connected to the target network.
+3. Setup the connection using the command listed when setting up the source system. 
+
 ## Options
 
 - `-h, --help`: Display the help menu, which provides an overview of available options and examples.
@@ -37,16 +41,16 @@ To use this script, you must run it with superuser privileges. It provides sever
 sudo ./GrizzlyTunnel.sh -r 10.60.1.0/24 --adapter-type tap -s
 ```
 
-- To set up the compromised system with multiple routes (comma-separated):
+- To set up the controlled system with multiple routes (comma-separated):
 
 ```bash
-sudo ./GrizzlyTunnel.sh -r 10.60.1.0/24,10.70.1.0/24 -t -i eth1
+sudo ./GrizzlyTunnel.sh -r 10.60.1.0/24,10.70.1.0/24 -s -i eth1
 ```
 
-- To set up the compromised system with routes from a file:
+- To set up the controlled system with routes from a file:
 
 ```bash
-sudo ./GrizzlyTunnel.sh -r routes.txt -t -i eth1
+sudo ./GrizzlyTunnel.sh -r routes.txt -s -i eth1
 ```
 
 - To remove the setup on the controlled system:
