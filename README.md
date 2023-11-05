@@ -1,6 +1,6 @@
 # GrizzlyTunnel
 
-This script is designed to set up TUN/TAP adapters and routes for creating a VPN-like network connection between a controlled system and a compromised system. It simplifies the process of configuring network routes and adapters on both systems. The controlled system and compromised system can communicate with each other through the created TUN/TAP adapters and specified routes.
+This script is designed to set up TUN adapters and routes for creating a VPN-like network connection between a controlled system and a compromised system. It simplifies the process of configuring network routes and adapters on both systems. The controlled system and compromised system can communicate with each other through the created TUN adapters and specified routes.
 
 ## Table of Contents
 
@@ -10,13 +10,12 @@ This script is designed to set up TUN/TAP adapters and routes for creating a VPN
 - [Examples](#examples)
 - [Cleaning Up](#cleaning-up)
 - [Requirements](#requirements)
+- [ToDo](#todo)
 - [Contributing](#contributing)
 
 ## Introduction
 
 This script facilitates the setup of a controlled system and a compromised system for network communication. The controlled system, often acting as the server, controls the VPN connection, while the compromised system, acting as the client, connects to the controlled system through a TUN/TAP adapter.
-
-**If you prefer to use a TAP adapter instead of a TUN adapter, you can modify the script to replace "TUN" with "TAP" within the script. This currently is not possible using the CLI as this caused issues**
 
 ## Usage
 
@@ -53,6 +52,10 @@ You can use the `--cleanup` option to remove the setup on either the controlled 
 ## Requirements
 
 - This script should be run with superuser privileges (e.g., `sudo`).
+
+## ToDo
+
+- Adding support for TAP instead of tun.
 
 ## Contributing
 
