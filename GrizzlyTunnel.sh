@@ -87,8 +87,7 @@ setup_compromised_system() {
   echo "[+] Added route for 10.10.255.2 via 10.10.255.1 dev tun0"
   IFS=',' read -ra route_array <<< "$routes"  # Split comma-separated routes
   for route in "${route_array[@]}"; do
-    iptables -t nat -A POSTROUTING -d "$route" -o "$interface" -j MASQUERADE
-    echo "[+] Set up NAT with output interface: $interface for route $route"
+    echo "[+] Run: iptables -t nat -A POSTROUTING -d "$route" -o "$interface" -j MASQUERADE"
   done
 
   # Create the SSH tunnel
