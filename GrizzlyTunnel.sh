@@ -12,8 +12,10 @@ show_help() {
   echo "  --cleanup [source|target]  Remove setup for controlled or compromised system"
   echo ""
   echo "Example usage:"
-  echo "  To set up the controlled system with a single route using a TAP adapter:"
+  echo "  To set up the controlled system with a single route:"
   echo "  sudo $0 -r 10.60.1.0/24 -s"
+  echo "  To set up the target system with a single route:"
+  echo "  sudo $0 -r 10.60.1.0/24 -i enps1 -t"
   echo ""
 }
 
