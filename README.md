@@ -25,6 +25,8 @@ To use this script, you must run it with superuser privileges. It provides sever
 2. Setup target system defining the same routes, this will create IP table rules that tells the traffic to move from the tunnel to the nic that is connected to the target network.
 3. Setup the connection using the command listed when setting up the source system.
 
+**Note: -s and -t should always be placed at the end of the command.**
+
 ## Options
 
 - `-h, --help`: Display the help menu, which provides an overview of available options and examples.
