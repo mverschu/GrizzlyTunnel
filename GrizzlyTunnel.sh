@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Define color codes
+GREEN='\033[0;32m' # Green
+NC='\033[0m'       # No Color
+
 # Function to display the help menu
 show_help() {
   echo "Usage: sudo $0 [OPTIONS]"
@@ -62,8 +66,6 @@ setup_controlled_system() {
   # Display additional messages
   echo "[!] To complete the setup for VPN connection, on the target host, run:"
   echo "[!] sudo $0 -r <route(s)> -t -i <outgoing interface>"
-  echo "[!] To start the VPN connection, on the target host, run:"
-  echo "[!] ssh -f -N -w 0:1 <ip>"
 }
 
 # Function to set up the compromised system
@@ -78,8 +80,14 @@ setup_compromised_system() {
   echo "[+] Activating tun0"
   modprobe tun
   echo "[+] Ran modprobe tun"
-  sysctl -w net.ipv4.ip_forward=1
-  echo "[+] Enabled IP forwarding"
+  # Check if IP forwarding is already enabled
+  current_ip_forward_setting=$(sysctl -n net.ipv4.ip_forward)
+  if [ "$current_ip_forward_setting" -eq 0 ]; then
+    sysctl -w net.ipv4.ip_forward=1
+    echo "[+] Enabled IP forwarding"
+  else
+    echo "[!] IP forwarding is already enabled"
+  fi
   ip route add 10.10.255.2 via 10.10.255.1 dev tun0
   echo "[+] Added route for 10.10.255.2 via 10.10.255.1 dev tun0"
   IFS=',' read -ra route_array <<< "$routes"  # Split comma-separated routes
@@ -89,7 +97,8 @@ setup_compromised_system() {
   done
 
   # Create the SSH tunnel
-  echo "ssh -f -N -w 0:1 <user@target>"
+  echo "[!] To create tunnel run:"
+  echo -e "${GREEN}ssh -f -N -w 0:1 <user@target>${NC}"
 }
 
 # Function to remove the setup on the controlled system
@@ -138,6 +147,7 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+# Process arguments and enforce combinations
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h | --help)
@@ -168,7 +178,7 @@ while [[ $# -gt 0 ]]; do
       fi
       ;;
     -s | --source)
-      # Check if -r or --routes is provided
+      source_option=true
       if [ -z "$routes" ]; then
         echo "[-] The -s or --source option requires the -r or --routes option."
         show_help
@@ -179,9 +189,9 @@ while [[ $# -gt 0 ]]; do
       setup_controlled_system
       ;;
     -t | --target)
-      # Check if -r or --routes is provided
-      if [ -z "$routes" ]; then
-        echo "[-] The -t or --target option requires the -r or --routes option."
+      target_option=true
+      if [ -z "$routes" ] || [ -z "$interface" ]; then
+        echo "[-] The -t or --target option requires the -r or --routes option and the -i or --interface option."
         show_help
         exit 1
       fi
@@ -217,3 +227,14 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+
+# Enforce combination rules
+if $source_option && ! $target_option; then
+  echo "[-] The -s or --source option requires the -t or --target option."
+  show_help
+  exit 1
+elif $target_option && ! $source_option; then
+  echo "[-] The -t or --target option requires the -s or --source option."
+  show_help
+  exit 1
+fi
