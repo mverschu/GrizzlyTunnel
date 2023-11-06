@@ -32,13 +32,19 @@ To use this script, you must run it with superuser privileges. It provides sever
 
 **Setup source:**
 
+Attacker machine where you need to connect to a network through another system that is actually connected to that network.
+
 ![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/6a1cbd70-ac50-401c-9bdf-07efb4840b5b)
 
 **Setup target:**
 
+The machine that is connected to the network you want to access from the attacker (source) machine.
+
 ![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/b4028e85-63ec-42ed-9ccd-5059d00c876a)
 
 **Profit:**
+
+After tunnel is created it is possible to use tools from attacker machine to target network using a layer 3 network.
 
 ![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/f4af22f1-128a-4685-9e11-59daeba7395c)
 
