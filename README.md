@@ -54,6 +54,14 @@ To use this script, you must run it with superuser privileges. It provides sever
 
 You can use the `--cleanup` option to remove the setup on either the controlled or compromised system.
 
+**Source:**
+
+![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/c727e85b-3f07-4daf-b2af-9baa8b49f50c)
+
+**Target:**
+
+![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/f7a9cd84-ecc5-4b21-97e2-da17c829b02c)
+
 ## Requirements
 
 - This script should be run with superuser privileges (e.g., `sudo`).
