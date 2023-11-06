@@ -85,6 +85,7 @@ setup_compromised_system() {
   IFS=',' read -ra route_array <<< "$routes"  # Split comma-separated routes
   for route in "${route_array[@]}"; do
     iptables -t nat -A POSTROUTING -d $route -o $interface -j MASQUERADE
+    echo "[!] Added iptable rule for $route on $interface !"
   done
 
   # Create the SSH tunnel
@@ -116,6 +117,13 @@ cleanup_compromised_system() {
   ip route del 10.10.255.2 via 10.10.255.1 dev tun0
   # Remove TUN/TAP adapter
   ip link del tun0
+
+  read -p "[?] Do you want to clear NAT iptables? (y/n) " answer
+  if [ "$answer" == "y" ]; then
+    iptables -t nat -F
+  else
+    echo "[-] NAT iptables left intact."
+  fi
   echo "[+] Cleaned up the compromised system"
 }
 
