@@ -6,6 +6,7 @@ This script is designed to set up TUN adapters and routes for creating a VPN-lik
 
 - [Introduction](#introduction)
 - [Usage](#usage)
+- [Demo](#demo)
 - [Options](#options)
 - [Examples](#examples)
 - [Cleaning Up](#cleaning-up)
@@ -26,6 +27,10 @@ To use this script, you must run it with superuser privileges. It provides sever
 3. Setup the connection using the command listed when setting up the source system.
 
 **Note: -s and -t should always be placed at the end of the command.**
+
+## Demo
+
+![GrizzlyTunnel Demo](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/63b03a85-748d-4bd5-bc86-574edef98b88)
 
 ## Options
 
