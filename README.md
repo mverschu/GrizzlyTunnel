@@ -62,9 +62,13 @@ You can use the `--cleanup` option to remove the setup on either the controlled 
 
 **Source:**
 
+Everything that has been setup will be cleaned.
+
 ![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/c727e85b-3f07-4daf-b2af-9baa8b49f50c)
 
 **Target:**
+
+Everything that has been setup will be cleaned. The question to flush the IPTABLES NAT rules is asked to give user control.
 
 ![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/f7a9cd84-ecc5-4b21-97e2-da17c829b02c)
 
