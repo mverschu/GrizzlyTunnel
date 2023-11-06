@@ -30,7 +30,7 @@ To use this script, you must run it with superuser privileges. It provides sever
 
 ## Demo
 
-![GrizzlyTunnel Demo](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/63b03a85-748d-4bd5-bc86-574edef98b88)
+![GT](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/0540005d-d692-4cae-82a8-dbff7e644e36)
 
 ## Options
 
