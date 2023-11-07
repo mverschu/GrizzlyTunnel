@@ -65,7 +65,7 @@ setup_controlled_system() {
 
   # Display additional messages
   echo "[!] To complete the setup for VPN connection, on the target host, run:"
-  echo "[!] sudo $0 -r <route(s)> -t -i <outgoing interface>"
+  echo "[!] sudo $0 -r <route(s)> -i <outgoing interface> -t"
 }
 
 # Function to set up the compromised system
