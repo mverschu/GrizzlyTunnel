@@ -48,8 +48,6 @@ Attacker machine where you need to connect to a network through another system t
 [+] Set up routing rule for route 10.60.33.0/24
 [!] To complete the setup for VPN connection, on the target host, run:
 [!] sudo ./GrizzlyTunnel.sh -r <route(s)> -t -i <outgoing interface>
-[!] To start the VPN connection, on the target host, run:
-[!] ssh -f -N -w 0:1 <ip>
 ```
 
 **Setup target:**
@@ -72,7 +70,7 @@ The machine that is connected to the network you want to access from the attacke
 [!] Added iptable rule for 10.60.34.0/24 on eth0 !
 [!] Added iptable rule for 10.60.33.0/24 on eth0 !
 [!] To create tunnel run:
-ssh -f -N -w 0:1 <user@target>
+ssh -f -N -w 0:1 -o ServerAliveInterval=60 <user@target>
 ```
 
 **Profit:**
