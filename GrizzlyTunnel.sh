@@ -264,14 +264,3 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
-
-# Enforce combination rules
-if $source_option && ! $target_option; then
-  echo "[-] The -s or --source option requires the -t or --target option."
-  show_help
-  exit 1
-elif $target_option && ! $source_option; then
-  echo "[-] The -t or --target option requires the -s or --source option."
-  show_help
-  exit 1
-fi
