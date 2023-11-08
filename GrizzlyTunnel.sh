@@ -47,15 +47,22 @@ change_ssh_config_controlled() {
     echo "[+] Added PermitTunnel yes to SSH configuration on the controlled system"
   fi
 
-  # Check if the ClientAliveInterval and ClientAliveCountMax directives are already present
-  if grep -q "^\s*ClientAliveInterval" /etc/ssh/sshd_config && grep -q "^\s*ClientAliveCountMax" /etc/ssh/sshd_config; then
-    echo "[+] SSH configuration already includes ClientAliveInterval and ClientAliveCountMax"
-  else
-    # Add the ClientAliveInterval and ClientAliveCountMax directives
-    echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
-    echo "ClientAliveCountMax 3" >> /etc/ssh/sshd_config
-    echo "[+] Added ClientAliveInterval and ClientAliveCountMax to SSH configuration on the controlled system"
+  # Check if the ClientAliveInterval directive is present and remove it if found
+  if grep -q "^\s*ClientAliveInterval" /etc/ssh/sshd_config; then
+    sed -i '/ClientAliveInterval/d' /etc/ssh/sshd_config
+    echo "[+] Removed ClientAliveInterval from SSH configuration"
   fi
+
+  # Check if the ClientAliveCountMax directive is present and remove it if found
+  if grep -q "^\s*ClientAliveCountMax" /etc/ssh/sshd_config; then
+    sed -i '/ClientAliveCountMax/d' /etc/ssh/sshd_config
+    echo "[+] Removed ClientAliveCountMax from SSH configuration"
+  fi
+
+  # Add the ClientAliveInterval and ClientAliveCountMax directives
+  echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
+  echo "ClientAliveCountMax 3" >> /etc/ssh/sshd_config
+  echo "[+] Added ClientAliveInterval and ClientAliveCountMax to SSH configuration on the controlled system"
 
   # Restart the SSH service to apply the changes
   systemctl restart ssh
