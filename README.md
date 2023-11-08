@@ -118,6 +118,7 @@ Everything that has been setup will be cleaned. The question to flush the IPTABL
 ## Requirements
 
 - This script should be run with superuser privileges (e.g., `sudo`).
+- The source host should have openssh-server installed.
 
 ## ToDo
 
