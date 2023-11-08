@@ -124,6 +124,7 @@ setup_compromised_system() {
 cleanup_controlled_system() {
   if [ -n "$routes" ]; then
     # Remove added route
+    echo "[-] Removed routes."
     ip route del "$routes" via 10.10.255.2 dev tun1
   fi
   # Remove TUN/TAP adapter
@@ -132,24 +133,24 @@ cleanup_controlled_system() {
   # Check and remove PermitTunnel setting
   if grep -q "^\s*PermitTunnel yes" /etc/ssh/sshd_config; then
     sed -i '/PermitTunnel yes/d' /etc/ssh/sshd_config
-    echo "[+] Removed PermitTunnel yes from SSH configuration"
+    echo "[-] Removed PermitTunnel yes from SSH configuration"
   fi
 
   # Check and remove ClientAliveInterval setting
   if grep -q "^\s*ClientAliveInterval" /etc/ssh/sshd_config; then
     sed -i '/ClientAliveInterval/d' /etc/ssh/sshd_config
-    echo "[+] Removed ClientAliveInterval from SSH configuration"
+    echo "[-] Removed ClientAliveInterval from SSH configuration"
   fi
 
   # Check and remove ClientAliveCountMax setting
   if grep -q "^\s*ClientAliveCountMax" /etc/ssh/sshd_config; then
     sed -i '/ClientAliveCountMax/d' /etc/ssh/sshd_config
-    echo "[+] Removed ClientAliveCountMax from SSH configuration"
+    echo "[-] Removed ClientAliveCountMax from SSH configuration"
   fi
 
   # Restart the SSH service to apply the changes
   systemctl restart ssh
-  echo "[+] Cleaned up the controlled system"
+  echo "[!] Cleaned up the controlled system"
 }
 
 # Function to remove the setup on the compromised system
@@ -157,13 +158,13 @@ cleanup_compromised_system() {
   IFS=',' read -ra route_array <<< "$routes"  # Split comma-separated routes
   for route in "${route_array[@]}"; do
     iptables-save | grep -v "$route" | iptables-restore
-    echo "[+] Removed NAT rule for route $route"
+    echo "[-] Removed NAT rule(s) for route(s) $route"
   done
   # Remove added route
   ip route del 10.10.255.2 via 10.10.255.1 dev tun0
   # Remove TUN/TAP adapter
   ip link del tun0
-  echo "[+] Cleaned up the compromised system"
+  echo "[!] Cleaned up the compromised system"
 }
 
 # Main script
