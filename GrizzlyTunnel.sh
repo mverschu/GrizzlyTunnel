@@ -98,7 +98,7 @@ setup_compromised_system() {
 
   # Create the SSH tunnel
   echo "[!] To create tunnel run:"
-  echo -e "${GREEN}ssh -f -N -w 0:1 <user@target>${NC}"
+  echo -e "${GREEN}ssh -f -N -w 0:1 -o ServerAliveInterval=60 <user@target>${NC}"
 }
 
 # Function to remove the setup on the controlled system
