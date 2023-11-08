@@ -69,6 +69,24 @@ change_ssh_config_controlled() {
   echo "[+] SSH service restarted"
 }
 
+wait_for_ssh_connection() {
+  # Get the initial count of SSH connections
+  initial_count=$(netstat | grep ssh | wc -l)
+
+  while true; do
+    # Get the current count of SSH connections
+    current_count=$(netstat | grep ssh | wc -l)
+
+    # Check if a new connection has been established
+    if [ "$current_count" -gt "$initial_count" ]; then
+      echo -e "${GREEN}[!] Connection established... Happy Hacking! :)${NC}"
+      break
+    fi
+
+    sleep 1
+  done
+}
+
 # Function to set up the controlled system
 setup_controlled_system() {
   # Implement controlled system setup steps
@@ -86,6 +104,7 @@ setup_controlled_system() {
   # Display additional messages
   echo "[!] To complete the setup for VPN connection, on the target host, run:"
   echo "[!] sudo $0 -r <route(s)> -i <outgoing interface> -t"
+  wait_for_ssh_connection
 }
 
 # Function to set up the compromised system

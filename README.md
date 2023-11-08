@@ -32,6 +32,8 @@ To use this script, you must run it with superuser privileges. It provides sever
 
 **Setup source:**
 
+Run **'sudo su'** on both machines to execute as root.
+
 Attacker machine where you need to connect to a network through another system that is actually connected to that network.
 
 ```bash
