@@ -37,16 +37,29 @@ add_routes() {
 
 # Function to change SSH configuration on the controlled system
 change_ssh_config_controlled() {
-  # Check if the configuration is already present and commented, and if not, add it
-  if ! grep -q "^\s*#?PermitTunnel yes" /etc/ssh/sshd_config; then
+  # Check if the PermitTunnel directive is already present and uncommented
+  if grep -q "^\s*PermitTunnel yes" /etc/ssh/sshd_config; then
+    echo "[+] SSH configuration already includes PermitTunnel yes"
+  else
     # Remove any commented-out PermitTunnel directive and add the active one
     sed -i '/^#\?PermitTunnel/d' /etc/ssh/sshd_config
     echo "PermitTunnel yes" >> /etc/ssh/sshd_config
-    systemctl restart ssh
-    echo "[+] Changed SSH configuration on the controlled system"
-  else
-    echo "[+] SSH configuration already includes PermitTunnel yes"
+    echo "[+] Added PermitTunnel yes to SSH configuration on the controlled system"
   fi
+
+  # Check if the ClientAliveInterval and ClientAliveCountMax directives are already present
+  if grep -q "^\s*ClientAliveInterval" /etc/ssh/sshd_config && grep -q "^\s*ClientAliveCountMax" /etc/ssh/sshd_config; then
+    echo "[+] SSH configuration already includes ClientAliveInterval and ClientAliveCountMax"
+  else
+    # Add the ClientAliveInterval and ClientAliveCountMax directives
+    echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
+    echo "ClientAliveCountMax 3" >> /etc/ssh/sshd_config
+    echo "[+] Added ClientAliveInterval and ClientAliveCountMax to SSH configuration on the controlled system"
+  fi
+
+  # Restart the SSH service to apply the changes
+  systemctl restart ssh
+  echo "[+] SSH service restarted"
 }
 
 # Function to set up the controlled system
@@ -98,10 +111,9 @@ setup_compromised_system() {
 
   # Create the SSH tunnel
   echo "[!] To create tunnel run:"
-  echo -e "${GREEN}ssh -f -N -w 0:1 -o ServerAliveInterval=60 <user@target>${NC}"
+  echo -e "${GREEN}ssh -f -N -w 0:1 <user@target>${NC}"
 }
 
-# Function to remove the setup on the controlled system
 cleanup_controlled_system() {
   if [ -n "$routes" ]; then
     # Remove added route
@@ -109,8 +121,26 @@ cleanup_controlled_system() {
   fi
   # Remove TUN/TAP adapter
   ip link del tun1
-  # Remove SSH configuration change
-  sed -i '/PermitTunnel yes/d' /etc/ssh/sshd_config
+  
+  # Check and remove PermitTunnel setting
+  if grep -q "^\s*PermitTunnel yes" /etc/ssh/sshd_config; then
+    sed -i '/PermitTunnel yes/d' /etc/ssh/sshd_config
+    echo "[+] Removed PermitTunnel yes from SSH configuration"
+  fi
+
+  # Check and remove ClientAliveInterval setting
+  if grep -q "^\s*ClientAliveInterval" /etc/ssh/sshd_config; then
+    sed -i '/ClientAliveInterval/d' /etc/ssh/sshd_config
+    echo "[+] Removed ClientAliveInterval from SSH configuration"
+  fi
+
+  # Check and remove ClientAliveCountMax setting
+  if grep -q "^\s*ClientAliveCountMax" /etc/ssh/sshd_config; then
+    sed -i '/ClientAliveCountMax/d' /etc/ssh/sshd_config
+    echo "[+] Removed ClientAliveCountMax from SSH configuration"
+  fi
+
+  # Restart the SSH service to apply the changes
   systemctl restart ssh
   echo "[+] Cleaned up the controlled system"
 }
