@@ -34,19 +34,57 @@ To use this script, you must run it with superuser privileges. It provides sever
 
 Attacker machine where you need to connect to a network through another system that is actually connected to that network.
 
-![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/6a1cbd70-ac50-401c-9bdf-07efb4840b5b)
+```bash
+./GrizzlyTunnel.sh -r routes.txt -s
+[+] Changed SSH configuration on the controlled system
+[+] Added IP to tun1
+[+] tun1 link is now up
+[+] Set up routing rule for route 10.60.1.0/24
+[+] Set up routing rule for route 10.60.36.0/24
+[+] Set up routing rule for route 10.60.32.0/24
+[+] Set up routing rule for route 10.60.35.0/24
+[+] Set up routing rule for route 10.60.0.0/24
+[+] Set up routing rule for route 10.60.34.0/24
+[+] Set up routing rule for route 10.60.33.0/24
+[!] To complete the setup for VPN connection, on the target host, run:
+[!] sudo ./GrizzlyTunnel.sh -r <route(s)> -t -i <outgoing interface>
+[!] To start the VPN connection, on the target host, run:
+[!] ssh -f -N -w 0:1 <ip>
+```
 
 **Setup target:**
 
 The machine that is connected to the network you want to access from the attacker (source) machine.
 
-![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/b4028e85-63ec-42ed-9ccd-5059d00c876a)
+```bash
+./GrizzlyTunnel.sh -r routes.txt -i eth0 -t
+[+] Adding tuntap device tun0 for user root
+[+] Adding ip address to tun0
+[+] Activating tun0
+[+] Ran modprobe tun
+[!] IP forwarding is already enabled
+[+] Added route for 10.10.255.2 via 10.10.255.1 dev tun0
+[!] Added iptable rule for 10.60.1.0/24 on eth0 !
+[!] Added iptable rule for 10.60.36.0/24 on eth0 !
+[!] Added iptable rule for 10.60.32.0/24 on eth0 !
+[!] Added iptable rule for 10.60.35.0/24 on eth0 !
+[!] Added iptable rule for 10.60.0.0/24 on eth0 !
+[!] Added iptable rule for 10.60.34.0/24 on eth0 !
+[!] Added iptable rule for 10.60.33.0/24 on eth0 !
+[!] To create tunnel run:
+ssh -f -N -w 0:1 <user@target>
+```
 
 **Profit:**
 
 After tunnel is created it is possible to use tools from attacker machine to target network using a layer 3 network.
 
-![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/f4af22f1-128a-4685-9e11-59daeba7395c)
+```bash
+ping 10.60.1.68
+PING 10.60.1.68 (10.60.1.68) 56(84) bytes of data.
+64 bytes from 10.60.1.68: icmp_seq=1 ttl=126 time=7.43 ms
+64 bytes from 10.60.1.68: icmp_seq=2 ttl=126 time=8.77 ms
+```
 
 ## Options
 
@@ -64,13 +102,20 @@ You can use the `--cleanup` option to remove the setup on either the controlled 
 
 Everything that has been setup will be cleaned.
 
-![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/c727e85b-3f07-4daf-b2af-9baa8b49f50c)
+```bash
+./GrizzlyTunnel.sh --cleanup source
+[+] Cleaned up the controlled system
+```
 
 **Target:**
 
 Everything that has been setup will be cleaned. The question to flush the IPTABLES NAT rules is asked to give user control.
 
-![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/f7a9cd84-ecc5-4b21-97e2-da17c829b02c)
+```bash
+./GrizzlyTunnel.sh --cleanup target
+[?] Do you want to clear NAT iptables? (y/n) y
+[+] Cleaned up the compromised system
+```
 
 ## Requirements
 
