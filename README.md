@@ -70,7 +70,7 @@ The machine that is connected to the network you want to access from the attacke
 [!] Added iptable rule for 10.60.34.0/24 on eth0 !
 [!] Added iptable rule for 10.60.33.0/24 on eth0 !
 [!] To create tunnel run:
-ssh -f -N -w 0:1 -o ServerAliveInterval=60 <user@target>
+ssh -f -N -w 0:1 <user@target>
 ```
 
 **Profit:**
