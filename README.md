@@ -1,5 +1,8 @@
 # GrizzlyTunnel
 
+<img src="https://github.com/mverschu/GrizzlyTunnel/assets/69352107/047794aa-ac7e-4c35-8f07-26a8eb6154da" width="500" alt="Grizzly Tunnel Logo">
+
+
 This script is designed to set up TUN adapters and routes for creating a VPN-like network connection between a controlled system and a compromised system. It simplifies the process of configuring network routes and adapters on both systems. The controlled system and compromised system can communicate with each other through the created TUN adapters and specified routes.
 
 ## Table of Contents
