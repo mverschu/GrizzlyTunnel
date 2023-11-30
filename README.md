@@ -6,8 +6,6 @@
 
 This script is designed to set up TUN adapters and routes for creating a VPN-like network connection between a controlled system and a compromised system. It simplifies the process of configuring network routes and adapters on both systems. The controlled system and compromised system can communicate with each other through the created TUN adapters and specified routes.
 
-![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/a5b29048-00d5-49c3-8a88-fb0724e4dda3)
-
 ## Table of Contents
 
 - [Introduction](#introduction)
@@ -23,6 +21,8 @@ This script is designed to set up TUN adapters and routes for creating a VPN-lik
 ## Introduction
 
 This script facilitates the setup of a controlled system and a compromised system for network communication. The controlled system, often acting as the server, controls the VPN connection, while the compromised system, acting as the client, connects to the controlled system through a TUN/TAP adapter.
+
+![image](https://github.com/mverschu/GrizzlyTunnel/assets/69352107/a5b29048-00d5-49c3-8a88-fb0724e4dda3)
 
 ## Usage
 
