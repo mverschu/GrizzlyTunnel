@@ -115,11 +115,10 @@ Everything that has been setup will be cleaned.
 
 **Target:**
 
-Everything that has been setup will be cleaned. The question to flush the IPTABLES NAT rules is asked to give user control.
+Everything that has been setup will be cleaned.
 
 ```bash
 ./GrizzlyTunnel.sh --cleanup target
-[?] Do you want to clear NAT iptables? (y/n) y
 [+] Cleaned up the compromised system
 ```
 
