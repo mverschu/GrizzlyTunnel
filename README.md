@@ -99,6 +99,7 @@ PING 10.60.1.68 (10.60.1.68) 56(84) bytes of data.
 - `-t, --target`: Set up the compromised system, which connects to the controlled system.
 - `-r, --routes [route(s)]`: Add routes for network communication (required with `-s` or `-t`).
 - `-i, --interface`: Specify the outgoing interface (default: eth0).
+- `-a, --auto`: Use auto polling system to connect back automatically to source system continuously checking the connection.
 
 ## Cleaning Up
 
