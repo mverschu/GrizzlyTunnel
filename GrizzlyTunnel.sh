@@ -153,6 +153,21 @@ setup_auto_compromised_system() {
     ping -c 1 -W 5 10.10.255.2 > /dev/null 2>&1
   }
 
+# Function to terminate old SSH processes
+terminate_old_connections() {
+  # Use pgrep to find SSH processes associated with the script
+  for pid in $(pgrep -f "ssh -o StrictHostKeyChecking=no -f -N -w 0:1 $auto_username@$auto_ip"); do
+    # Check if the process still exists
+    if kill -0 "$pid" 2>/dev/null; then
+      echo "[!] Terminating old SSH process: $pid"
+      kill "$pid"
+    else
+      # Process doesn't exist anymore, remove it from the list
+      echo "[!] Process $pid already terminated or doesn't exist."
+    fi
+  done
+}
+
   # Implement compromised system setup steps
   ip tuntap add dev tun0 mode tun user root
 
@@ -179,18 +194,28 @@ setup_auto_compromised_system() {
     echo "[!] Added iptable rule for $route on $interface !"
   done
 
-  # Create the SSH tunnel initially
+  # Create the SSH tunnel initially and store its PID
   ssh -o StrictHostKeyChecking=no -f -N -w 0:1 "$auto_username@$auto_ip"
+  # Store the PID of the initial SSH process
+  initial_ssh_pid=$!
+  old_connection_pids+=("$initial_ssh_pid")
+  # List to store old connection process IDs
+  declare -a old_connection_pids
 
   # Monitor and automatically reconnect if the connection is lost
   while true; do
     # Check if the connection is active
     if ! check_connection; then
       echo "[!] Connection lost. Reconnecting..."
+      # Terminate old SSH processes
+      terminate_old_connections
       # Close any existing SSH control socket
       ssh -O exit -S "$CONTROL_SOCKET" > /dev/null 2>&1
-      # Create the SSH tunnel again
-      ssh -o StrictHostKeyChecking=no -f -N -w 0:1 "$auto_username@$auto_ip"
+      # Create the SSH tunnel again and store its process ID
+      ssh -o StrictHostKeyChecking=no -f -N -w 0:1 "$auto_username@$auto_ip" &
+      # Store the new SSH process ID
+      new_pid=$!
+      old_connection_pids+=("$new_pid")
       echo "[!] SSH tunnel recreated."
     else
       echo "[✓] Connection is active."
