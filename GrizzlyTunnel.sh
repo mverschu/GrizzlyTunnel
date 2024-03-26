@@ -75,21 +75,22 @@ change_ssh_config_controlled() {
 }
 
 wait_for_ssh_connection() {
-  # Get the initial count of SSH connections
-  initial_count=$(netstat | grep ssh | wc -l)
+  local icmp_received=0
 
-  while true; do
-    # Get the current count of SSH connections
-    current_count=$(netstat | grep ssh | wc -l)
-
-    # Check if a new connection has been established
-    if [ "$current_count" -gt "$initial_count" ]; then
-      echo -e "${GREEN}[!] Connection established... Happy Hacking! :)${NC}"
+  # Start monitoring ICMP packets directed towards 10.10.255.2 on the tun1 interface
+  while [ $icmp_received -eq 0 ]; do
+    tcpdump_output=$(tcpdump -i tun1 -n icmp and dst host 10.10.255.2 -c 1 2>/dev/null)
+    if echo "$tcpdump_output" | grep -q "ICMP echo request"; then
+      icmp_received=1
       break
     fi
-
-    sleep 1
   done
+
+  if [ $icmp_received -eq 1 ]; then
+    echo -e "${GREEN}[✓] ICMP packet received... Happy Hacking! :)${NC}"
+  else
+    echo "[!] No ICMP packet received yet."
+  fi
 }
 
 # Function to set up the controlled system
