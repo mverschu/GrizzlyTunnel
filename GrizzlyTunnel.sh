@@ -102,6 +102,8 @@ setup_controlled_system() {
   done
 
   # Display additional messages
+  echo "[+] Adding ICMP allow on tun1 for monitoring purposes"
+  iptables -A INPUT -i tun1 -p icmp --icmp-type echo-request -j ACCEPT
   echo "[!] To complete the setup for VPN connection, on the target host, run:"
   echo "[!] sudo $0 -r <route(s)> -i <outgoing interface> -t"
   wait_for_ssh_connection
