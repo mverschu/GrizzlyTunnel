@@ -2,23 +2,26 @@
 
 # Define color codes
 GREEN='\033[0;32m' # Green
+BLUE='\033[0;34m'  # Blue
+CYAN='\033[0;36m'  # Cyan
 NC='\033[0m'       # No Color
 auto_username=""
 auto_ip=""
 
 # Function to display the help menu
 show_help() {
-  echo "Usage: sudo $0 [OPTIONS]"
-  echo "Options:"
+  echo -e "${CYAN}Usage: sudo $0 [OPTIONS]${NC}"
+  echo -e "${BLUE}Options:${NC}"
   echo "  -h, --help             Display this help menu"
   echo "  -s, --source           Set up the controlled system"
   echo "  -t, --target           Set up the compromised system"
   echo "  -r, --routes [route(s)] Add routes (required with -s or -t)"
   echo "  -i, --interface        Specify the outgoing interface (default: eth0)"
   echo "  -a, --auto [username] [ipaddress]    Automatically connect using SSH tunnel (only supported using pub/priv key)"
+  echo "  -m, --interactive      Start interactive menu"
   echo "  --cleanup [source|target]  Remove setup for controlled or compromised system"
   echo ""
-  echo "Example usage:"
+  echo -e "${CYAN}Example usage:${NC}"
   echo "  To set up the controlled system with a single route:"
   echo "  sudo $0 -r 10.60.1.0/24 -s"
   echo "  To set up the target system with a single route:"
@@ -26,6 +29,118 @@ show_help() {
   echo "  To set up the target system to automatically connect back (polling system):"
   echo "  sudo $0 -r routes.txt -i enps1 --auto whitehat 123.123.123.123"
   echo ""
+}
+
+# Function to check VPN connection status
+check_vpn_connection() {
+  # Check if the system can ping the target system over tun1 interface
+  ping -c 1 -W 2 10.10.255.1 > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    echo -e "${GREEN}[✓] Connection to VPN is active.${NC}"
+    connection_status="Active"
+  else
+    echo -e "${RED}[✘] VPN connection is down.${NC}"
+    connection_status="Inactive"
+  fi
+}
+
+# Function to display tunnel status and graphics
+display_tunnel_status() {
+  check_vpn_connection
+
+  # Graphics representation of the tunnel
+  echo -e "${CYAN}--------------------------- Tunnel Status ---------------------------${NC}"
+  echo -e "${BLUE}Hostname: $(hostname) ${NC}"
+  echo -e "${BLUE}VPN Tunnel: ${connection_status} ${NC}"
+
+  if [ "$connection_status" == "Active" ]; then
+    echo -e "${GREEN}   _______________                        |*\_/*|________ ${NC}"
+    echo -e "${GREEN}  |  ___________  |     .-.     .-.      ||_/-\_|______  | ${NC}"
+    echo -e "${GREEN}  | |           | |    .****. .****.     | |           | | ${NC}"
+    echo -e "${GREEN}  | |   0   0   | |    .*****.*****.     | |   0   0   | | ${NC}"
+    echo -e "${GREEN}  | |     -     | |     .*********.      | |     -     | | ${NC}"
+    echo -e "${GREEN}  | |   \\___/   | |      .*******.       | |   \\___/   | | ${NC}"
+    echo -e "${GREEN}  | |___     ___| |       .*****.        | |___________| | ${NC}"
+    echo -e "${GREEN}  |_____|\_/|_____|        .***.         |_______________| ${NC}"
+    echo -e "${GREEN}    _|__|/ \\|_|_.............*.............._|________|_ ${NC}"
+    echo -e "${GREEN}   / ********** \\                          / ********** \\ ${NC}"
+    echo -e "${GREEN} /  ************  \\                      /  ************  \\ ${NC}"
+    echo -e "${GREEN}--------------------                    -------------------- ${NC}"
+    echo -e "${GREEN}   Communication Established: Data is flowing! ${NC}"
+
+  else
+    echo -e "${RED}         _______ ${NC}"
+    echo -e "${RED}        |.-----.| ${NC}"
+    echo -e "${RED}        ||x . x|| ${NC}"
+    echo -e "${RED}        ||_.-._|| ${NC}"
+    echo -e "${RED}        \`--)-(--\` ${NC}" # escaped backticks and parentheses
+    echo -e "${RED}       __[=== o]___ ${NC}"
+    echo -e "${RED}      |:::::::::::|\\ ${NC}"
+    echo -e "${RED}      \`-=========-\`() ${NC}" # escaped parentheses
+    echo -e "${RED}   *BANG* The bird got shot! No communication available. ${NC}"
+  fi
+
+  echo -e "${CYAN}--------------------------------------------------------------------${NC}"
+}
+
+
+# Interactive mode function
+interactive_menu() {
+  while true; do
+    display_tunnel_status   # Show the tunnel connection status
+
+    echo ""
+    echo -e "${GREEN}========================= Interactive Setup Menu =========================${NC}"
+    echo -e "${BLUE}1.${NC} Set up controlled system"
+    echo -e "${BLUE}2.${NC} Set up compromised system"
+    echo -e "${BLUE}3.${NC} Add routes"
+    echo -e "${BLUE}4.${NC} Cleanup setup"
+    echo -e "${BLUE}7.${NC} Exit"
+    echo -n "Select an option: "
+    read -r choice
+
+    case "$choice" in
+      1)
+        echo -n "Enter route(s) (comma-separated or file): "
+        read -r routes
+        change_ssh_config_controlled
+        setup_controlled_system
+        ;;
+      2)
+        echo -n "Enter route(s) (comma-separated or file): "
+        read -r routes
+        echo -n "Enter outgoing interface: "
+        read -r interface
+        setup_compromised_system
+        ;;
+      3)
+        echo -n "Enter route(s) (comma-separated or file): "
+        read -r routes
+        add_routes "$routes" "$interface"
+        ;;
+      4)
+        echo "Select system to clean up:"
+        echo "  1. Controlled system"
+        echo "  2. Compromised system"
+        echo -n "Enter choice: "
+        read -r cleanup_choice
+        if [ "$cleanup_choice" -eq 1 ]; then
+          cleanup_controlled_system
+        elif [ "$cleanup_choice" -eq 2 ]; then
+          cleanup_compromised_system
+        else
+          echo "Invalid choice."
+        fi
+        ;;
+      7)
+        echo "Exiting interactive mode."
+        break
+        ;;
+      *)
+        echo "Invalid option. Please try again."
+        ;;
+    esac
+  done
 }
 
 # Function to add routes
@@ -95,24 +210,6 @@ wait_for_ssh_connection() {
 
 # Function to set up the controlled system
 setup_controlled_system() {
-  # Check and configure UFW if enabled
-  if command -v ufw >/dev/null; then
-    ufw_status=$(sudo ufw status verbose | grep -i "Status:" | awk '{print $2}')
-    if [[ "$ufw_status" == "active" ]]; then
-      routed_status=$(sudo ufw status verbose | grep -i "Default:" | grep "routed" | awk '{print $4}')
-      if [[ "$routed_status" == "deny" ]]; then
-        echo "[+] UFW routed traffic is denied. Changing to allow."
-        sudo ufw default allow routed
-        ufw_routed_changed=true
-      else
-        echo "[+] UFW routed traffic is already allowed. No changes made."
-      fi
-    else
-      echo "[+] UFW is not active. No changes required."
-    fi
-  else
-    echo "[!] UFW is not installed or available. Skipping UFW configuration."
-  fi
   # Implement controlled system setup steps
   ip tuntap add dev tun1 mode tun
   ip addr add 10.10.255.2/30 dev tun1
@@ -135,6 +232,31 @@ setup_controlled_system() {
 
 # Function to set up the compromised system
 setup_compromised_system() {
+# Check and configure UFW if enabled
+if command -v ufw >/dev/null; then
+  ufw_status=$(sudo ufw status verbose | grep -i "Status:" | awk '{print $2}')
+  if [[ "$ufw_status" == "active" ]]; then
+    routed_status=$(sudo ufw status verbose | grep -i "Default:" | grep "routed" | awk '{print $6}')
+    if [[ "$routed_status" == "deny" ]]; then
+      echo "[+] UFW routed traffic is denied. Changing to allow."
+      sudo ufw default allow routed >/dev/null 2>&1
+      ufw_routed_changed=true
+    else
+      echo "[+] UFW routed traffic is already allowed. No changes made."
+      ufw_routed_changed=false
+    fi
+  else
+    echo "[+] UFW is not active. No changes required."
+    ufw_routed_changed=false
+  fi
+else
+  echo "[!] UFW is not installed or available. Skipping UFW configuration."
+  ufw_routed_changed=false
+fi
+
+# Write the status to /tmp
+echo "ufw_routed_changed=$ufw_routed_changed" > /tmp/ufw_routed_status.txt
+
   # Implement compromised system setup steps
   ip tuntap add dev tun0 mode tun user root
 
@@ -287,12 +409,19 @@ cleanup_compromised_system() {
   ip route del 10.10.255.2 via 10.10.255.1 dev tun0
   # Remove TUN/TAP adapter
   ip link del tun0
-  # Restore UFW routed default if changed
+
+# Restore UFW routed default if changed
+if [ -f /tmp/ufw_routed_status.txt ]; then
+  source /tmp/ufw_routed_status.txt
   if [ "$ufw_routed_changed" = true ]; then
     echo "[+] Restoring UFW routed traffic default to deny."
-    sudo ufw default deny routed
+    sudo ufw default deny routed >/dev/null 2>&1
   fi
-  echo "[!] Cleaned up the compromised system"
+else
+  echo "[!] No UFW routed status file found. Skipping restoration."
+fi
+
+echo "[!] Cleaned up the compromised system"
 }
 
 # Main script
@@ -313,13 +442,15 @@ while [[ $# -gt 0 ]]; do
       show_help
       exit 0
       ;;
+    -m | --interactive)
+      interactive_menu
+      exit 0
+      ;;
     -r | --routes)
       if [ -n "$2" ]; then
         if [ -f "$2" ]; then
-          # Read routes from a file
           routes=$(cat "$2")
         else
-          # Use provided routes
           routes="$2"
         fi
         shift
@@ -343,7 +474,6 @@ while [[ $# -gt 0 ]]; do
         show_help
         exit 1
       fi
-      # Implement controlled system setup steps
       change_ssh_config_controlled
       setup_controlled_system
       ;;
