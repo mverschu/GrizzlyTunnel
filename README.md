@@ -6,18 +6,6 @@
 
 This script is designed to set up TUN adapters and routes for creating a VPN-like network connection between a controlled system and a compromised system. It simplifies the process of configuring network routes and adapters on both systems. The controlled system and compromised system can communicate with each other through the created TUN adapters and specified routes.
 
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Usage](#usage)
-- [Demo](#demo)
-- [Options](#options)
-- [Examples](#examples)
-- [Cleaning Up](#cleaning-up)
-- [Requirements](#requirements)
-- [ToDo](#todo)
-- [Contributing](#contributing)
-
 ## Introduction
 
 This script facilitates the setup of a controlled system and a compromised system for network communication. The controlled system, often acting as the server, controls the VPN connection, while the compromised system, acting as the client, connects to the controlled system through a TUN/TAP adapter.
@@ -91,22 +79,6 @@ PING 10.60.1.68 (10.60.1.68) 56(84) bytes of data.
 64 bytes from 10.60.1.68: icmp_seq=1 ttl=126 time=7.43 ms
 64 bytes from 10.60.1.68: icmp_seq=2 ttl=126 time=8.77 ms
 ```
-
-## Options
-
-- `-h, --help`: Display the help menu, which provides an overview of available options and examples.
-- `-s, --source`: Set up the controlled system, which controls the VPN connection.
-- `-t, --target`: Set up the compromised system, which connects to the controlled system.
-- `-r, --routes [route(s)]`: Add routes for network communication (required with `-s` or `-t`).
-- `-i, --interface`: Specify the outgoing interface (default: eth0).
-- `-a, --auto [username] [ipaddress]`: Use auto polling system to connect back automatically to the source system, continuously checking the connection (requires public/private key authentication).
-- `-m, --interactive`: Start interactive menu.
-- `--cleanup [source|target]`: Restore setup for controlled or compromised system.
-
-## Requirements
-
-- This script should be run with superuser privileges (e.g., `sudo`).
-- The source host should have openssh-server installed.
 
 ## ToDo
 
