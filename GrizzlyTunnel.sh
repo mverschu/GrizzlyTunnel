@@ -95,6 +95,24 @@ wait_for_ssh_connection() {
 
 # Function to set up the controlled system
 setup_controlled_system() {
+  # Check and configure UFW if enabled
+  if command -v ufw >/dev/null; then
+    ufw_status=$(sudo ufw status verbose | grep -i "Status:" | awk '{print $2}')
+    if [[ "$ufw_status" == "active" ]]; then
+      routed_status=$(sudo ufw status verbose | grep -i "Default:" | grep "routed" | awk '{print $4}')
+      if [[ "$routed_status" == "deny" ]]; then
+        echo "[+] UFW routed traffic is denied. Changing to allow."
+        sudo ufw default allow routed
+        ufw_routed_changed=true
+      else
+        echo "[+] UFW routed traffic is already allowed. No changes made."
+      fi
+    else
+      echo "[+] UFW is not active. No changes required."
+    fi
+  else
+    echo "[!] UFW is not installed or available. Skipping UFW configuration."
+  fi
   # Implement controlled system setup steps
   ip tuntap add dev tun1 mode tun
   ip addr add 10.10.255.2/30 dev tun1
@@ -269,6 +287,11 @@ cleanup_compromised_system() {
   ip route del 10.10.255.2 via 10.10.255.1 dev tun0
   # Remove TUN/TAP adapter
   ip link del tun0
+  # Restore UFW routed default if changed
+  if [ "$ufw_routed_changed" = true ]; then
+    echo "[+] Restoring UFW routed traffic default to deny."
+    sudo ufw default deny routed
+  fi
   echo "[!] Cleaned up the compromised system"
 }
 
