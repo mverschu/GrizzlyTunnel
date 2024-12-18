@@ -31,27 +31,19 @@ show_help() {
   echo ""
 }
 
-# Function to display tunnel status and graphics
-display_tunnel_status() {
-  # Graphics representation of the tunnel
-  echo -e "${CYAN}--------------------------- Tunnel Status ---------------------------${NC}"
-  echo -e "${BLUE}Hostname: $(hostname) | OS: $(lsb_release -d | cut -f2) | Kernel: $(uname -r) ${NC}"
-}
-
-
 # Interactive mode function
 interactive_menu() {
   while true; do
-    display_tunnel_status   # Show the tunnel connection status
 
     echo ""
     echo -e "${GREEN}========================= Interactive Setup Menu =========================${NC}"
+    echo -e "${BLUE}Hostname: $(hostname) | OS: $(lsb_release -d | cut -f2) | Kernel: $(uname -r) ${NC}"
     echo -e "${BLUE}1.${NC} Set up controlled system"
     echo -e "${BLUE}2.${NC} Set up compromised system"
-    echo -e "${BLUE}3.${NC} Add routes"
-    echo -e "${BLUE}4.${NC} Cleanup setup"
+    echo -e "${BLUE}3.${NC} Add extra routes"
+    echo -e "${BLUE}4.${NC} Cleanup"
     echo -e "${BLUE}7.${NC} Exit"
-    echo -n "Select an option: "
+    echo -n "Select an option> "
     read -r choice
 
     case "$choice" in
