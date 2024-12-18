@@ -31,56 +31,11 @@ show_help() {
   echo ""
 }
 
-# Function to check VPN connection status
-check_vpn_connection() {
-  # Check if the system can ping the target system over tun1 interface
-  ping -c 1 -W 2 10.10.255.1 > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[✓] Connection to VPN is active.${NC}"
-    connection_status="Active"
-  else
-    echo -e "${RED}[✘] VPN connection is down.${NC}"
-    connection_status="Inactive"
-  fi
-}
-
 # Function to display tunnel status and graphics
 display_tunnel_status() {
-  check_vpn_connection
-
   # Graphics representation of the tunnel
   echo -e "${CYAN}--------------------------- Tunnel Status ---------------------------${NC}"
-  echo -e "${BLUE}Hostname: $(hostname) ${NC}"
-  echo -e "${BLUE}VPN Tunnel: ${connection_status} ${NC}"
-
-  if [ "$connection_status" == "Active" ]; then
-    echo -e "${GREEN}   _______________                        |*\_/*|________ ${NC}"
-    echo -e "${GREEN}  |  ___________  |     .-.     .-.      ||_/-\_|______  | ${NC}"
-    echo -e "${GREEN}  | |           | |    .****. .****.     | |           | | ${NC}"
-    echo -e "${GREEN}  | |   0   0   | |    .*****.*****.     | |   0   0   | | ${NC}"
-    echo -e "${GREEN}  | |     -     | |     .*********.      | |     -     | | ${NC}"
-    echo -e "${GREEN}  | |   \\___/   | |      .*******.       | |   \\___/   | | ${NC}"
-    echo -e "${GREEN}  | |___     ___| |       .*****.        | |___________| | ${NC}"
-    echo -e "${GREEN}  |_____|\_/|_____|        .***.         |_______________| ${NC}"
-    echo -e "${GREEN}    _|__|/ \\|_|_.............*.............._|________|_ ${NC}"
-    echo -e "${GREEN}   / ********** \\                          / ********** \\ ${NC}"
-    echo -e "${GREEN} /  ************  \\                      /  ************  \\ ${NC}"
-    echo -e "${GREEN}--------------------                    -------------------- ${NC}"
-    echo -e "${GREEN}   Communication Established: Data is flowing! ${NC}"
-
-  else
-    echo -e "${RED}         _______ ${NC}"
-    echo -e "${RED}        |.-----.| ${NC}"
-    echo -e "${RED}        ||x . x|| ${NC}"
-    echo -e "${RED}        ||_.-._|| ${NC}"
-    echo -e "${RED}        \`--)-(--\` ${NC}" # escaped backticks and parentheses
-    echo -e "${RED}       __[=== o]___ ${NC}"
-    echo -e "${RED}      |:::::::::::|\\ ${NC}"
-    echo -e "${RED}      \`-=========-\`() ${NC}" # escaped parentheses
-    echo -e "${RED}   *BANG* The bird got shot! No communication available. ${NC}"
-  fi
-
-  echo -e "${CYAN}--------------------------------------------------------------------${NC}"
+  echo -e "${BLUE}Hostname: $(hostname) | OS: $(lsb_release -d | cut -f2) | Kernel: $(uname -r) ${NC}"
 }
 
 
