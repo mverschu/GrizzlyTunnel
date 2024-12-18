@@ -111,6 +111,7 @@ PING 10.60.1.68 (10.60.1.68) 56(84) bytes of data.
 ## ToDo
 
 - Adding support for TAP instead of tun.
+- Allow multiple connections using multiple adapters.
 
 ## Contributing
 
