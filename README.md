@@ -99,29 +99,9 @@ PING 10.60.1.68 (10.60.1.68) 56(84) bytes of data.
 - `-t, --target`: Set up the compromised system, which connects to the controlled system.
 - `-r, --routes [route(s)]`: Add routes for network communication (required with `-s` or `-t`).
 - `-i, --interface`: Specify the outgoing interface (default: eth0).
-- `-a, --auto`: Use auto polling system to connect back automatically to source system continuously checking the connection.
-
-## Cleaning Up
-
-You can use the `--cleanup` option to remove the setup on either the controlled or compromised system.
-
-**Source:**
-
-Everything that has been setup will be cleaned.
-
-```bash
-./GrizzlyTunnel.sh --cleanup source
-[+] Cleaned up the controlled system
-```
-
-**Target:**
-
-Everything that has been setup will be cleaned.
-
-```bash
-./GrizzlyTunnel.sh --cleanup target
-[+] Cleaned up the compromised system
-```
+- `-a, --auto [username] [ipaddress]`: Use auto polling system to connect back automatically to the source system, continuously checking the connection (requires public/private key authentication).
+- `-m, --interactive`: Start interactive menu.
+- `--cleanup [source|target]`: Restore setup for controlled or compromised system.
 
 ## Requirements
 
